@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from userapp import views
+from . import views
+from .views import UserDetailAPI, RegisterUserAPIView
 urlpatterns = [
-    path('home/',views.current_datetime),
+    path('home/', views.current_datetime),
+    path("get-details", UserDetailAPI.as_view()),
+    path('register', RegisterUserAPIView.as_view()),
 ]
