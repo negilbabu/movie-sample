@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'Admin',
     'rest_framework',
     'userapp'
+
+    'Admin.apps.AdminConfig',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
