@@ -1,36 +1,78 @@
-import datetime
-from django.http import HttpResponse
-from rest_framework.permissions import AllowAny
+import jwt
+from django.conf import settings
+from django.contrib.auth.hashers import check_password
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+from .serialize import UserSerialize, LoginSerialize
+from rest_framework import status
+from .models import UserModel
 from rest_framework.response import Response
-from .serializers import UserSerializer, RegisterSerializer
-from django.contrib.auth.models import User
-from rest_framework.authentication import TokenAuthentication
-from rest_framework import generics
-from django.urls import include, path
-from django.shortcuts import render
-from . import views
+from datetime import datetime, timedelta
 
 
-# Create your views here.
-def current_datetime(request):
-    now = datetime.datetime.now()
-    html = "<html><body>It is now %s. </body></html>" % now
-    return HttpResponse(html)
+class UserView(APIView):
+    user_serializer = UserSerialize
+
+    def post(self, request):
+        data = request.data
+        email = request.data.get('email')
+        serializer = self.user_serializer(data=data)
+        if serializer.validate(data):
+            if serializer.is_valid():
+                user = UserModel.objects.filter(email=email).first()
+                if user:
+                    raise AuthenticationFailed({
+                        'errorCode': '1008',
+                        'message': email + ' Already Exists'
+                    })
+                serializer.save()
+                return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'errorCode': "4000", 'Message': "Error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Class based view to Get User Details using Token Authentication
-class UserDetailAPI(APIView):
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (AllowAny,)
+class LoginView(APIView):
+    login_serializer = LoginSerialize
 
-    def get(self, request, *args, **kwargs):
-        user = User.objects.get(id=request.user.id)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+    def post(self, request):
+        data = request.data
+        email = request.data.get('email')
+        password = request.data.get('password')
+        serializer = self.login_serializer(data=data)
+        if serializer.validate(data):
+            user = UserModel.objects.filter(email=email).first()
+            if not user:
+                raise AuthenticationFailed({
+                    'errorCode': '4000',
+                    'message': email + ' Not Found'
+                })
 
+        if not user or not check_password(password, user.password):
+            raise AuthenticationFailed({
+                'errorCode': '4001',
+                'message': 'Password is wrong for ' + email
+            })
 
-# Class based view to register user
-class RegisterUserAPIView(generics.CreateAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = RegisterSerializer
+        access_token_payload = {
+            'user_id': user.id,
+            'email': user.email,
+            'name': user.name,
+            'exp': datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRATION)
+        }
+
+        access_token = jwt.encode(access_token_payload, settings.SECRET_KEY, algorithm='HS256')
+
+        refresh_token_payload = {
+            'user_id': user.id,
+            'exp': datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRATION)
+        }
+
+        refresh_token = jwt.encode(refresh_token_payload, settings.SECRET_KEY, algorithm='HS256')
+
+        return Response({
+            'user_id': user.id,
+            'email': user.email,
+            'name': user.name,
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+        })
