@@ -43,13 +43,8 @@ INSTALLED_APPS = [
     'userapp',
     'corsheaders',
     'Admin.apps.AdminConfig',
-    'Admin',
-    'rest_framework',
-    'userapp',
-
-    'Admin.apps.AdminConfig',
-    'rest_framework'
 ]
+
 
 CORS_ORIGIN_ALLOW_ALL = True
 

@@ -18,16 +18,7 @@ from django.urls import path
 
 from Admin.views import AdminView
 
-<<<<<<< HEAD
-=======
-urlpatterns = [
->>>>>>> 1595cc9c986a0d373d35c8a1bb2decd6fbd7ee9d
 
 urlpatterns = [
     path('', AdminView.as_view())
 ]
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 1595cc9c986a0d373d35c8a1bb2decd6fbd7ee9d
