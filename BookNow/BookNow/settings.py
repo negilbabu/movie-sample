@@ -39,11 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Admin',
     'rest_framework',
     'userapp',
-    'corsheaders'
+    'corsheaders',
+    'Admin.apps.AdminConfig',
 ]
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 MIDDLEWARE = [

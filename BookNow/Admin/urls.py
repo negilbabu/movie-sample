@@ -16,6 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from Admin.views import AdminView
+
+
 urlpatterns = [
-    
+    path('', AdminView.as_view())
 ]
+
+
