@@ -11,11 +11,12 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-
+import datetime
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+ROOT_URLCONF = 'BookNow.urls'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -26,7 +27,8 @@ SECRET_KEY = 'django-insecure-8t59hhb-8ozsxm(r_*x0_2w7o^96nxm3w4=2y$324@j*)f#j+^
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+ACCESS_TOKEN_EXPIRATION = 60  # token expires after 60 minutes
+REFRESH_TOKEN_EXPIRATION = 1440  # token expires after 24 hours (1 day)
 
 # Application definition
 
@@ -38,8 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Admin',
-    'rest_framework'
+    'rest_framework',
+    'userapp',
+    'corsheaders'
 ]
+CORS_ORIGIN_ALLOW_ALL = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'BookNow.urls'
